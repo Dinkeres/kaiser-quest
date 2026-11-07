@@ -1,8 +1,12 @@
 
 define(['text!../config/config_build.json'],
 function(build) {
+    var isSecure = window.location.protocol === "https:",
+        defaultPort = window.location.port || (isSecure ? 443 : 80);
     var config = {
-        dev: { host: "localhost", port: 8000, dispatcher: false },
+        // Use the page origin by default so a deployed server works for every
+        // player, rather than attempting to connect to each player's localhost.
+        dev: { host: window.location.hostname || "localhost", port: defaultPort, dispatcher: false },
         build: JSON.parse(build)
     };
     

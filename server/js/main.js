@@ -132,13 +132,17 @@ process.argv.forEach(function (val, index, array) {
 
 getConfigFile(defaultConfigPath, function(defaultConfig) {
     getConfigFile(customConfigPath, function(localConfig) {
-        if(localConfig) {
-            main(localConfig);
-        } else if(defaultConfig) {
-            main(defaultConfig);
-        } else {
+        var config = localConfig || defaultConfig,
+            port = parseInt(process.env.PORT, 10);
+        if(!config) {
             console.error("Server cannot start without any configuration file.");
             process.exit(1);
         }
+        // Managed hosts supply their public listener through PORT. Local
+        // configuration remains authoritative when that environment is absent.
+        if(port > 0 && port < 65536) {
+            config.port = port;
+        }
+        main(config);
     }, true);
 });

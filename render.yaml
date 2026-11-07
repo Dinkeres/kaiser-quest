@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: kaiser-quest
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /status
+    envVars:
+      - key: NODE_VERSION
+        value: 22
