@@ -9,7 +9,7 @@ function main(config) {
         Log = require('log'),
         _ = require('underscore'),
         server = new ws.MultiVersionWebsocketServer(config.port),
-        metrics = config.metrics_enabled ? new Metrics(config) : null;
+        metrics = config.metrics_enabled ? new Metrics(config) : null,
         worlds = [],
         lastTotalPlayers = 0,
         checkPopulationInterval = setInterval(function() {
@@ -108,10 +108,12 @@ function getWorldDistribution(worlds) {
     return distribution;
 }
 
-function getConfigFile(path, callback) {
+function getConfigFile(path, callback, optional) {
     fs.readFile(path, 'utf8', function(err, json_string) {
         if(err) {
-            console.error("Could not open config file:", err.path);
+            if(!optional) {
+                console.error("Could not open config file:", err.path);
+            }
             callback(null);
         } else {
             callback(JSON.parse(json_string));
@@ -138,5 +140,5 @@ getConfigFile(defaultConfigPath, function(defaultConfig) {
             console.error("Server cannot start without any configuration file.");
             process.exit(1);
         }
-    });
+    }, true);
 });

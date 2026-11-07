@@ -87,7 +87,7 @@ module.exports = Player = Character.extend({
                     var x = message[1],
                         y = message[2];
                     
-                    if(self.server.isValidPosition(x, y)) {
+                    if(self.server.isValidPlayerMove(self, x, y)) {
                         self.setPosition(x, y);
                         self.clearTarget();
                         
@@ -98,10 +98,10 @@ module.exports = Player = Character.extend({
             }
             else if(action === Types.Messages.LOOTMOVE) {
                 if(self.lootmove_callback) {
-                    self.setPosition(message[1], message[2]);
-                    
                     var item = self.server.getEntityById(message[3]);
-                    if(item) {
+                    if(item && self.server.isValidPlayerMove(self, message[1], message[2])
+                    && self.server.isInInteractionRange(self, item)) {
+                        self.setPosition(message[1], message[2]);
                         self.clearTarget();
 
                         self.broadcast(new Messages.LootMove(self, item));
@@ -117,41 +117,20 @@ module.exports = Player = Character.extend({
             else if(action === Types.Messages.ATTACK) {
                 var mob = self.server.getEntityById(message[1]);
                 
-                if(mob) {
-                    self.setTarget(mob);
-                    self.server.broadcastAttacker(self);
-                }
+                self.server.setPlayerTarget(self, mob);
             }
             else if(action === Types.Messages.HIT) {
                 var mob = self.server.getEntityById(message[1]);
-                if(mob) {
-                    var dmg = Formulas.dmg(self.weaponLevel, mob.armorLevel);
-                    
-                    if(dmg > 0) {
-                        mob.receiveDamage(dmg, self.id);
-                        self.server.handleMobHate(mob.id, self.id, dmg);
-                        self.server.handleHurtEntity(mob, self, dmg);
-                    }
-                }
+                self.server.resolveAttack(self, mob, Date.now());
             }
             else if(action === Types.Messages.HURT) {
-                var mob = self.server.getEntityById(message[1]);
-                if(mob && self.hitPoints > 0) {
-                    self.hitPoints -= Formulas.dmg(mob.weaponLevel, self.armorLevel);
-                    self.server.handleHurtEntity(self);
-                    
-                    if(self.hitPoints <= 0) {
-                        self.isDead = true;
-                        if(self.firepotionTimeout) {
-                            clearTimeout(self.firepotionTimeout);
-                        }
-                    }
-                }
+                // Damage is resolved by WorldServer.processCombat. Retain this
+                // protocol branch only so older clients remain connected.
             }
             else if(action === Types.Messages.LOOT) {
                 var item = self.server.getEntityById(message[1]);
                 
-                if(item) {
+                if(item && self.server.isInInteractionRange(self, item)) {
                     var kind = item.kind;
                     
                     if(Types.isItem(kind)) {
@@ -205,7 +184,7 @@ module.exports = Player = Character.extend({
             }
             else if(action === Types.Messages.OPEN) {
                 var chest = self.server.getEntityById(message[1]);
-                if(chest && chest instanceof Chest) {
+                if(chest && chest instanceof Chest && self.server.isInInteractionRange(self, chest)) {
                     self.server.handleOpenedChest(chest, self);
                 }
             }

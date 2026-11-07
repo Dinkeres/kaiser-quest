@@ -1,0 +1,19 @@
+{
+  "pack": "BrowserQuest Reborn Forest Art Reference",
+  "version": "1.0-reference",
+  "production_ready": false,
+  "reference_image": "reference/forest_concept_atlas.png",
+  "tile_size": [32,32],
+  "player_frame_size": [32,48],
+  "directions": ["down","left","right","up"],
+  "actions": ["idle","walk","attack","hurt","death"],
+  "categories": {
+    "characters": ["warrior","rogue","mage","archer"],
+    "monsters": ["slime","wolf","goblin","skeleton","spider","boar","treant","forest_golem"],
+    "npcs": ["villager","merchant","blacksmith","healer","guard","quest_giver","innkeeper","fisher","farmer","elder"],
+    "environment": ["forest_tiles","trees","water","cliffs","buildings","props"],
+    "items": ["weapons","armor","potions","materials"],
+    "interface": ["health","mana","experience","inventory","hotbar","minimap"],
+    "effects": ["melee","magic","damage_numbers","healing"]
+  }
+}

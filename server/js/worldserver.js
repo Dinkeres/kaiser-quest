@@ -15,6 +15,7 @@ var cls = require("./lib/class"),
     Messages = require('./message'),
     Properties = require("./properties"),
     Utils = require("./utils"),
+    Combat = require("./combat"),
     Types = require("../../shared/js/gametypes");
 
 // ======= GAME SERVER ========
@@ -190,6 +191,7 @@ module.exports = World = cls.Class.extend({
         var updateCount = 0;
         setInterval(function() {
             self.processGroups();
+            self.processCombat(Date.now());
             self.processQueues();
             
             if(updateCount < regenCount) {
@@ -602,6 +604,54 @@ module.exports = World = cls.Class.extend({
             return true;
         }
         return false;
+    },
+
+    isValidPlayerMove: function(player, x, y) {
+        return this.isValidPosition(x, y) && Combat.isInRange(player, { x: x, y: y }, 1);
+    },
+
+    isInInteractionRange: function(player, entity) {
+        return Combat.isInRange(player, entity, 1);
+    },
+
+    setPlayerTarget: function(player, mob) {
+        if(player && mob && mob.type === "mob" && mob.hitPoints > 0
+        && Combat.isInRange(player, mob, 12)) {
+            player.setTarget(mob);
+            this.broadcastAttacker(player);
+            return true;
+        }
+        return false;
+    },
+
+    resolveAttack: function(attacker, target, now) {
+        if(!Combat.canAttack(attacker, target, now)) {
+            return false;
+        }
+        Combat.recordAttack(attacker, now);
+        var damage = Combat.calculateDamage(attacker, target);
+        if(damage > 0) {
+            target.hitPoints -= damage;
+            if(target.type === "player" && target.hitPoints <= 0) {
+                target.isDead = true;
+            }
+            if(target.type === "mob") {
+                this.handleMobHate(target.id, attacker.id, damage);
+            }
+            this.handleHurtEntity(target, attacker, damage);
+        }
+        return true;
+    },
+
+    processCombat: function(now) {
+        var self = this;
+        this.forEachMob(function(mob) {
+            var target = mob.target ? self.getEntityById(mob.target) : null;
+            if(!target || target.type !== "player" || target.isDead || !Combat.isInRange(mob, target, Combat.ATTACK_RANGE)) {
+                return;
+            }
+            self.resolveAttack(mob, target, now);
+        });
     },
     
     handlePlayerVanish: function(player) {

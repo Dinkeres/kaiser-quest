@@ -1,13 +1,13 @@
 
 var Utils = {},
-    sanitizer = require('sanitizer'),
     Types = require("../../shared/js/gametypes");
 
 module.exports = Utils;
 
 Utils.sanitize = function(string) {
-    // Strip unsafe tags, then escape as html entities.
-    return sanitizer.escape(sanitizer.sanitize(string));
+    return String(string || '').replace(/[&<>'"]/g, function(character) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character];
+    });
 };
 
 Utils.random = function(range) {

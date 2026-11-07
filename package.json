@@ -1,14 +1,15 @@
 {
-    "name": "BrowserQuest"
-  , "version": "0.0.1"
-  , "private": false 
-  , "dependencies": {
-    "underscore": ">0"
-    , "log": ">0"
-    , "bison": ">0"
-    , "websocket": ">0"
-    , "websocket-server": ">0"
-    , "sanitizer": ">0"
-    , "memcache": ">0"
-  }
+  "name": "kaiser-quest",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Kaiser Quest, a modernized BrowserQuest foundation.",
+  "engines": { "node": ">=20 <25" },
+  "scripts": {
+    "start": "node server/js/main.js",
+    "check": "node --check server/js/main.js && node --check server/js/ws.js && node --check server/js/map.js && node --check server/js/combat.js && node --check server/js/player.js && node --check server/js/worldserver.js",
+    "build:client": "bash bin/build.sh",
+    "verify:network": "node tools/verify-network.js",
+    "verify:combat": "node tools/verify-combat.js"
+  },
+  "dependencies": { "log": "1.4.0", "underscore": "1.13.8", "ws": "8.22.1" }
 }
